@@ -35,9 +35,9 @@ def plot_stimulus(stimulus):
     plt.figure()
     plt.plot(stimulus[:,0],stimulus[:, 1])
 
-def plot_raster_plot_and_spike_counts(t_spikes, spike_counts):
+def plot_raster_plot_and_spike_counts(t_spikes, spike_counts, n_trials, binlen, fs):
     fig, axs = plt.subplots(2)
-    axs[0].plot(t_samples, spike_counts)
+    axs[0].plot(t_samples, spike_counts/n_trials/binlen/fs)
 
     axs[1].eventplot(t_spikes)
 
@@ -78,19 +78,17 @@ print("FF: ", FF)
 
 
 n_samples = len(neurons[0])
-n_neurons = len(neurons)
+n_trials = len(neurons)
 t_samples = np.arange(len(neurons[0])) * 0.1
 binlen = 25
 step = 1
 windows_start = range(0, n_samples, step)
 
 
-spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step) / binlen / n_neurons
+spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step)
 t_spikes = [np.where(neuron==1)[0] for neuron in neurons]
 
-print(len(spike_counts))
-
-plot_raster_plot_and_spike_counts(t_spikes, spike_counts)
+plot_raster_plot_and_spike_counts(t_spikes, spike_counts, n_trials, binlen, fs=0.1e-3)
 plot_stimulus(stimulus)
 
 
