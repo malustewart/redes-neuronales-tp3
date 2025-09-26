@@ -78,13 +78,14 @@ print("FF: ", FF)
 
 
 n_samples = len(neurons[0])
+n_neurons = len(neurons)
 t_samples = np.arange(len(neurons[0])) * 0.1
-binlen = 16
-step = 8
+binlen = 25
+step = 1
 windows_start = range(0, n_samples, step)
 
 
-spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step)
+spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step) / binlen / n_neurons
 t_spikes = [np.where(neuron==1)[0] for neuron in neurons]
 
 print(len(spike_counts))
