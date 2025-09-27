@@ -35,9 +35,10 @@ def plot_stimulus(stimulus):
     plt.figure()
     plt.plot(stimulus[:,0],stimulus[:, 1])
 
-def plot_raster_plot_and_spike_counts(t_spikes, spike_counts, n_trials, binlen, fs):
+def plot_raster_plot_and_spike_density(t_spikes, spike_density, fs):
     fig, axs = plt.subplots(2)
-    axs[0].plot(t_samples, spike_counts/n_trials/binlen/fs)
+    t_samples = np.arange(len(spike_density)) / fs
+    axs[0].plot(t_samples, spike_density)
 
     axs[1].eventplot(t_spikes)
 
@@ -76,21 +77,21 @@ print("FF: ", FF)
 
 ### punto 3
 
+fs = 10 #kHz
 
 n_samples = len(neurons[0])
 n_trials = len(neurons)
-t_samples = np.arange(len(neurons[0])) * 0.1
-binlen = 25
+binlen = 200
 step = 1
 windows_start = range(0, n_samples, step)
 
 
 spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step)
-t_spikes = [np.where(neuron==1)[0] for neuron in neurons]
+spike_density = spike_counts/n_trials/binlen*fs # todo: fix normalization for last windows
+t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #ms
 
-plot_raster_plot_and_spike_counts(t_spikes, spike_counts, n_trials, binlen, fs=0.1e-3)
+plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
 plot_stimulus(stimulus)
-
 
 ### punto 4
 
