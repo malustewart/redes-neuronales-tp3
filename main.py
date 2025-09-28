@@ -72,7 +72,9 @@ def punto_2(neurons, stimulus):
     plot_spike_count_histogram(spike_count, n_bins=20)
     plot_spike_count_histogram(spike_count, n_bins=30)
 
-def punto_3(neurons, stimulus):
+def punto_3_y_4(neurons, stimulus):
+    # punto 3
+
     fs = 10 #kHz
 
     n_samples = len(neurons[0])
@@ -88,14 +90,41 @@ def punto_3(neurons, stimulus):
 
     plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
 
-def punto_4(neurons, stimulus):
-    pass
+    # punto 4
+
+    def calc_STA(s, tau, t_spikes):
+        if not tau % 100:
+            print(tau)
+        padded_s = np.pad(s, (0, len(s)), 'constant', constant_values=(0,0))
+        suma = np.sum([padded_s[t_spike-tau] for t_spike in t_spikes])
+        return suma / len(t_spikes)
+    
+    t_spikes = np.concatenate([np.where(neuron==1)[0] for neuron in neurons[0:5]])
+    t_stimulus = stimulus[:,0]
+    value_stimulus = stimulus[:,1]
+    STA = np.array([calc_STA(value_stimulus, tau, t_spikes) for tau in range(len(stimulus))])
+
+    plt.figure()
+    plt.plot(t_stimulus, STA)
+
+    var_stim = np.var(stimulus)
+    r_mean = np.mean(spike_density)
+    print(var_stim, r_mean)
+    D = STA * r_mean / var_stim
+
+    plt.figure()
+    plt.plot(t_stimulus, D)
+
+    r_est = r_mean + np.convolve(D, value_stimulus)
+    plt.figure()
+    plt.plot(r_est[0:10000])
+
+
 
 if __name__ == "__main__":
-    punto_1(neurons, stimulus)
-    punto_2(neurons, stimulus)
-    punto_3(neurons, stimulus)
-    punto_4(neurons, stimulus)
+    # punto_1(neurons, stimulus)
+    # punto_2(neurons, stimulus)
+    punto_3_y_4(neurons, stimulus)
 
 
 ###
