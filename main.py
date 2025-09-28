@@ -45,56 +45,57 @@ def plot_raster_plot_and_spike_density(t_spikes, spike_density, fs):
 neurons = np.loadtxt("dat/spikes.dat", dtype=int)
 stimulus = np.loadtxt("dat/stimulus.dat", dtype=float)
 
-## punto 1
+def punto_1(neurons, stimulus):
+    ISI = np.concatenate([(np.diff(np.where(neuron == 1)).flatten()) for neuron in neurons])*0.1
+    plot_ISI_histogram(ISI=ISI)
 
-ISI = np.concatenate([(np.diff(np.where(neuron == 1)).flatten()) for neuron in neurons])*0.1
-# plot_ISI_histogram(ISI=ISI)
+    ISI_avg = np.mean(ISI)
+    ISI_std = np.std(ISI)
+    CV = ISI_std/ISI_avg
 
-ISI_avg = np.mean(ISI)
-ISI_std = np.std(ISI)
-CV = ISI_std/ISI_avg
+    print("ISI average: ", ISI_avg)
+    print("ISI std: ", ISI_std)
+    print("CV: ", CV)
 
-print("ISI average: ", ISI_avg)
-print("ISI std: ", ISI_std)
-print("CV: ", CV)
+def punto_2(neurons, stimulus):
+    spike_count = [np.count_nonzero(neuron) for neuron in neurons]
 
-### punto 2
+    spike_count_avg = np.mean(spike_count)
+    spike_count_std = np.std(spike_count)
+    FF = spike_count_std**2/spike_count_avg
 
-spike_count = [np.count_nonzero(neuron) for neuron in neurons]
+    print("Spike count average: ", spike_count_avg)
+    print("Spike count std: ", spike_count_std)
+    print("FF: ", FF)
 
-spike_count_avg = np.mean(spike_count)
-spike_count_std = np.std(spike_count)
-FF = spike_count_std**2/spike_count_avg
+    plot_spike_count_histogram(spike_count, n_bins=10)
+    plot_spike_count_histogram(spike_count, n_bins=20)
+    plot_spike_count_histogram(spike_count, n_bins=30)
 
-print("Spike count average: ", spike_count_avg)
-print("Spike count std: ", spike_count_std)
-print("FF: ", FF)
+def punto_3(neurons, stimulus):
+    fs = 10 #kHz
 
-# plot_spike_count_histogram(spike_count, n_bins=10)
-# plot_spike_count_histogram(spike_count, n_bins=20)
-# plot_spike_count_histogram(spike_count, n_bins=30)
-
-
-### punto 3
-
-fs = 10 #kHz
-
-n_samples = len(neurons[0])
-n_trials = len(neurons)
-binlen = 200
-step = 1
-windows_start = range(0, n_samples, step)
+    n_samples = len(neurons[0])
+    n_trials = len(neurons)
+    binlen = 200
+    step = 1
+    windows_start = range(0, n_samples, step)
 
 
-spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step)
-spike_density = spike_counts/n_trials/binlen*fs # todo: fix normalization for last windows
-t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #ms
+    spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step)
+    spike_density = spike_counts/n_trials/binlen*fs # todo: fix normalization for last windows
+    t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #ms
 
-plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
-plot_stimulus(stimulus)
+    plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
 
-### punto 4
+def punto_4(neurons, stimulus):
+    pass
 
+if __name__ == "__main__":
+    punto_1(neurons, stimulus)
+    punto_2(neurons, stimulus)
+    punto_3(neurons, stimulus)
+    punto_4(neurons, stimulus)
 
 
 ###
