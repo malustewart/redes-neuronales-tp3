@@ -118,7 +118,7 @@ def punto_3_y_4(neurons, stimulus):
     plt.figure()
     plt.plot(t_stimulus, STA)
 
-    var_stim = np.var(stimulus)
+    var_stim = np.var(value_stimulus)
 
     # estimo r y calculo error cuadratico medio
     mses = []
