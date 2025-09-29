@@ -87,10 +87,10 @@ def punto_3_y_4(neurons, stimulus):
 
         spike_counts = [np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start]
         
-        return np.array([
+        return np.repeat(np.array([
             spike_count/n_trials/np.minimum(binlen, n_samples-i)*fs 
             for i, spike_count in enumerate(spike_counts)
-        ])
+        ]), step)[:n_samples]
 
     fs = 10 #kHz
     binlen = 200
@@ -104,7 +104,7 @@ def punto_3_y_4(neurons, stimulus):
     # punto 4
 
     def calc_STA(s, tau, t_spikes):
-        if not tau % 100:
+        if not tau % 1000:
             print(tau)
         padded_s = np.pad(s, (0, len(s)), 'constant', constant_values=(0,0))
         suma = np.sum([padded_s[t_spike-tau] for t_spike in t_spikes])
@@ -132,7 +132,6 @@ def punto_3_y_4(neurons, stimulus):
         plt.plot(density)
         plt.plot(r_est)
 
-    plt.figure()
     print(mses)
     plt.figure()
     plt.plot(mses)
