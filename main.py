@@ -79,7 +79,7 @@ def punto_3_y_4(neurons, stimulus):
             - neurons: 
                 - rows: trials
                 - column: presence or absence of spike (1 for presence, 0 for absence)
-            - fs: sampling freq in kHz
+            - fs: sampling freq in Hz
         '''
         n_samples = len(neurons[0])
         n_trials = len(neurons)
@@ -92,14 +92,14 @@ def punto_3_y_4(neurons, stimulus):
             for i, spike_count in enumerate(spike_counts)
         ]), step)[:n_samples]
 
-    fs = 10 #kHz
-    binlen = 200
-    step = 1
-    spike_density = calc_spike_density(neurons, binlen, step, fs)
+    fs = 10000 #Hz
+    # binlen = 200
+    # step = 1
+    # spike_density = calc_spike_density(neurons, binlen, step, fs)
 
-    t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #ms
+    # t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #s
 
-    plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
+    # plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
 
     # punto 4
 
@@ -110,7 +110,7 @@ def punto_3_y_4(neurons, stimulus):
         suma = np.sum([padded_s[t_spike-tau] for t_spike in t_spikes])
         return suma / len(t_spikes)
     
-    t_spikes = np.concatenate([np.where(neuron==1)[0] for neuron in neurons[0:5]])
+    t_spikes = np.concatenate([np.where(neuron==1)[0] for neuron in neurons])
     t_stimulus = stimulus[:,0]
     value_stimulus = stimulus[:,1]
     STA = np.array([calc_STA(value_stimulus, tau, t_spikes) for tau in range(len(stimulus))])
@@ -122,11 +122,14 @@ def punto_3_y_4(neurons, stimulus):
 
     # estimo r y calculo error cuadratico medio
     mses = []
-    for binlen in [10,20,100,200]:
-        density = calc_spike_density(neurons, binlen, 1, fs)
+    Ds = []
+    step = 1
+    for binlen in [20,100]:
+        density = calc_spike_density(neurons, binlen, step, fs)
         r_mean = np.mean(density)
-        D = 20*STA * r_mean / var_stim
-        r_est = (np.mean(spike_density) + np.convolve(D, value_stimulus))[:10000]
+        D = STA * r_mean / var_stim
+        Ds.append(D)
+        r_est = (r_mean + np.convolve(D, value_stimulus))[:10000]
         mses.append(np.square(density-r_est).mean())
         plt.figure()
         plt.plot(density)
@@ -135,6 +138,9 @@ def punto_3_y_4(neurons, stimulus):
     print(mses)
     plt.figure()
     plt.plot(mses)
+    plt.figure()
+    for D in Ds:
+        plt.plot(D)
 
 
 
@@ -143,7 +149,7 @@ def punto_3_y_4(neurons, stimulus):
 if __name__ == "__main__":
     # punto_1(neurons, stimulus)
     # punto_2(neurons, stimulus)
-    punto_3_y_4(neurons, stimulus)
+    punto_3_y_4(neurons[:10], stimulus)
 
 
 ###
