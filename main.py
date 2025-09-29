@@ -72,51 +72,48 @@ def punto_2(neurons, stimulus):
     plot_spike_count_histogram(spike_count, n_bins=20)
     plot_spike_count_histogram(spike_count, n_bins=30)
 
-def punto_3_y_4(neurons, stimulus):
-    # punto 3
-    def calc_spike_density(neurons, binlen, step, fs):
-        '''
-            - neurons: 
-                - rows: trials
-                - column: presence or absence of spike (1 for presence, 0 for absence)
-            - fs: sampling freq in Hz
-        '''
-        n_samples = len(neurons[0])
-        n_trials = len(neurons)
-        windows_start = range(0, n_samples, step)
+def calc_spike_density(neurons, binlen, step, fs):
+    '''
+        - neurons: 
+            - rows: trials
+            - column: presence or absence of spike (1 for presence, 0 for absence)
+        - fs: sampling freq in Hz
+    '''
+    n_samples = len(neurons[0])
+    n_trials = len(neurons)
+    windows_start = range(0, n_samples, step)
 
-        spike_counts = [np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start]
-        
-        return np.repeat(np.array([
-            spike_count/n_trials/np.minimum(binlen, n_samples-i)*fs 
-            for i, spike_count in enumerate(spike_counts)
-        ]), step)[:n_samples]
+    spike_counts = [np.count_nonzero(neurons[:, window_start:np.minimum(window_start+binlen, n_samples)]) for window_start in windows_start]
+    
+    return np.repeat(np.array([
+        spike_count/n_trials/np.minimum(binlen, n_samples-i)*fs 
+        for i, spike_count in enumerate(spike_counts)
+    ]), step)[:n_samples]
 
-    fs = 10000 #Hz
-    # binlen = 200
-    # step = 1
-    # spike_density = calc_spike_density(neurons, binlen, step, fs)
+def punto_3(neurons, stimulus):
 
-    # t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #s
+    fs = 10 #kHz
+    binlen = 200
+    step = 1
+    spike_density = calc_spike_density(neurons, binlen, step, fs)
 
-    # plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
+    t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #ms
 
-    # punto 4
+    plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
 
+def punto_4(neurons, stimulus):
+    fs = 10000 # Hz
     def calc_STA(s, tau, t_spikes):
         if not tau % 1000:
-            print(tau)
-        padded_s = np.pad(s, (0, len(s)), 'constant', constant_values=(0,0))
-        suma = np.sum([padded_s[t_spike-tau] for t_spike in t_spikes])
+            print("tau = ", tau)
+
+        suma = np.sum([s[t_spike-tau] for t_spike in t_spikes if t_spike - tau >= 0])
         return suma / len(t_spikes)
     
     t_spikes = np.concatenate([np.where(neuron==1)[0] for neuron in neurons])
     t_stimulus = stimulus[:,0]
     value_stimulus = stimulus[:,1]
-    STA = np.array([calc_STA(value_stimulus, tau, t_spikes) for tau in range(len(stimulus))])
-
-    plt.figure()
-    plt.plot(t_stimulus, STA)
+    value_stimulus -= np.mean(value_stimulus)
 
     var_stim = np.var(value_stimulus)
 
@@ -124,34 +121,36 @@ def punto_3_y_4(neurons, stimulus):
     mses = []
     Ds = []
     step = 1
-    for binlen in [20,100]:
+    n_trials = len(neurons)
+    n_samples = len(neurons[0])
+    print("r_avg = ", len(t_spikes)/n_trials/(n_samples/fs))
+
+
+    STA = np.array([calc_STA(value_stimulus, tau, t_spikes) for tau in range(len(stimulus))])
+    plt.figure()
+    plt.plot(t_stimulus, STA)
+
+    for binlen in [100, 1000]:
         density = calc_spike_density(neurons, binlen, step, fs)
         r_mean = np.mean(density)
         D = STA * r_mean / var_stim
         Ds.append(D)
-        r_est = (r_mean + np.convolve(D, value_stimulus))[:10000]
-        mses.append(np.square(density-r_est).mean())
+        r_est = (r_mean + np.convolve(D, value_stimulus)/fs)[:n_samples]
+        mses.append([np.square(density-r_est).mean(), np.square(density-r_mean).mean()])
+
         plt.figure()
-        plt.plot(density)
-        plt.plot(r_est)
+        plt.plot(density, label="r(t)")
+        plt.plot(r_est, label="r_est(t)")
+        plt.legend()
 
     print(mses)
-    plt.figure()
-    plt.plot(mses)
     plt.figure()
     for D in Ds:
         plt.plot(D)
 
-
-
-
-
 if __name__ == "__main__":
     # punto_1(neurons, stimulus)
     # punto_2(neurons, stimulus)
-    punto_3_y_4(neurons[:10], stimulus)
-
-
-###
-
-plt.show()
+    punto_3(neurons, stimulus)
+    punto_4(neurons[:10], stimulus)
+    plt.show()
