@@ -74,18 +74,29 @@ def punto_2(neurons, stimulus):
 
 def punto_3_y_4(neurons, stimulus):
     # punto 3
+    def calc_spike_density(neurons, binlen, step, fs):
+        '''
+            - neurons: 
+                - rows: trials
+                - column: presence or absence of spike (1 for presence, 0 for absence)
+            - fs: sampling freq in kHz
+        '''
+        n_samples = len(neurons[0])
+        n_trials = len(neurons)
+        windows_start = range(0, n_samples, step)
+
+        spike_counts = [np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start]
+        
+        return np.array([
+            spike_count/n_trials/np.minimum(binlen, n_samples-i)*fs 
+            for i, spike_count in enumerate(spike_counts)
+        ])
 
     fs = 10 #kHz
-
-    n_samples = len(neurons[0])
-    n_trials = len(neurons)
     binlen = 200
     step = 1
-    windows_start = range(0, n_samples, step)
+    spike_density = calc_spike_density(neurons, binlen, step, fs)
 
-
-    spike_counts = np.repeat([np.count_nonzero(neurons[:, window_start:window_start+binlen]) for window_start in windows_start], step)
-    spike_density = spike_counts/n_trials/binlen*fs # todo: fix normalization for last windows
     t_spikes = [np.where(neuron==1)[0]/fs for neuron in neurons]   #ms
 
     plot_raster_plot_and_spike_density(t_spikes, spike_density, fs)
@@ -108,16 +119,25 @@ def punto_3_y_4(neurons, stimulus):
     plt.plot(t_stimulus, STA)
 
     var_stim = np.var(stimulus)
-    r_mean = np.mean(spike_density)
-    print(var_stim, r_mean)
-    D = STA * r_mean / var_stim
+
+    # estimo r y calculo error cuadratico medio
+    mses = []
+    for binlen in [10,20,100,200]:
+        density = calc_spike_density(neurons, binlen, 1, fs)
+        r_mean = np.mean(density)
+        D = 20*STA * r_mean / var_stim
+        r_est = (np.mean(spike_density) + np.convolve(D, value_stimulus))[:10000]
+        mses.append(np.square(density-r_est).mean())
+        plt.figure()
+        plt.plot(density)
+        plt.plot(r_est)
 
     plt.figure()
-    plt.plot(t_stimulus, D)
-
-    r_est = r_mean + np.convolve(D, value_stimulus)
+    print(mses)
     plt.figure()
-    plt.plot(r_est[0:10000])
+    plt.plot(mses)
+
+
 
 
 
