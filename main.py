@@ -138,27 +138,28 @@ def punto_4(neurons, stimulus):
     for binlen in [100, 1000]:
         density = calc_spike_density(neurons, binlen, step, fs)
         r_mean = np.mean(density)
+        print(f"r_mean: {r_mean}")
         D = STA * r_mean / var_stim
         Ds.append(D)
         r_est = (r_mean + np.convolve(D, value_stimulus)/fs)[:n_samples]
         mses.append([np.square(density-r_est).mean(), np.square(density-r_mean).mean()])
 
         plt.figure()
-        plt.scatter(r_est-r_mean, density)
-
-        plt.figure()
         plt.plot(density, label="r(t)")
         plt.plot(r_est, label="r_est(t)")
         plt.legend()
+        plt.savefig(f"./figs/punto_4_binlen_{binlen}.png")
 
     print(mses)
     plt.figure()
-    for D in Ds:
-        plt.plot(D)
+    for i, D in enumerate(Ds):
+        plt.plot(t_stimulus, D)
+    plt.savefig(f"./figs/punto_4_D.png")
+
 
 if __name__ == "__main__":
-    # punto_1(neurons, stimulus)
-    # punto_2(neurons, stimulus)
+    punto_1(neurons, stimulus)
+    punto_2(neurons, stimulus)
     punto_3(neurons, stimulus)
-    # punto_4(neurons[:10], stimulus)
+    punto_4(neurons, stimulus)
     plt.show()
