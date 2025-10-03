@@ -90,7 +90,7 @@ $ r_0 = 116.2 "Hz" $
 
 $D(tau)$ se obtuvo de acuerdo a la siguiente ecuación:
 
-$ D(tau) = 1/sigma_s^2 <r> "STA"(tau) $
+$ D(tau) = 1/sigma_s^2 angle.l r angle.r "STA"(tau) $
 
 donde
 $ "STA"(tau) = 1/N_("spikes")sum_({n_("spikes")}) s(t_("spikes")-tau) $
@@ -111,7 +111,7 @@ La #ref(<fig:D>) muestra la función $D(tau)$ resultante.
 
 #figure(
   image("figs/D.png"),
-  caption: [Filtro lineal D que predice $r(t)-<r>$ en función del estímulo.]
+  caption: [Filtro lineal D que predice $r(t)-angle.l r angle.r$ en función del estímulo.]
 )<fig:D>
 
 = Anexo
