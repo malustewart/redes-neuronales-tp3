@@ -20,7 +20,7 @@ def plot_spike_count_histogram(spike_count, n_bins=10):
     fig, ax1 = plt.subplots()
 
     counts, bins, patches = ax1.hist(spike_count, bins=n_bins, edgecolor="black", alpha=0.6)
-    ax1.set_xlabel("Tiempo (ms)")
+    ax1.set_xlabel("Cantidad de disparos")
     ax1.set_ylabel("Frecuecia", color="tab:blue")
     ax1.tick_params(axis="y", labelcolor="tab:blue")
 
@@ -29,7 +29,7 @@ def plot_spike_count_histogram(spike_count, n_bins=10):
     ax2.set_ylabel("Densidad de probabilidad", color="tab:red")
     ax2.tick_params(axis="y", labelcolor="tab:red")
 
-    plt.title("Histograma de cantidad de spikes por muestra con frecuencia (izquierda) y aproximación de densidad de probabilidad (derecha)")
+    plt.title("Histograma de cantidad de spikes por muestra\ncon frecuencia (izquierda) y aproximación de densidad de probabilidad (derecha)")
 
 def plot_stimulus(stimulus):
     plt.figure()
@@ -38,9 +38,14 @@ def plot_stimulus(stimulus):
 def plot_raster_plot_and_spike_density(t_spikes, spike_density, fs):
     fig, axs = plt.subplots(2)
     t_samples = np.arange(len(spike_density)) / fs
+    axs[0].set_ylabel("r(t)")
+    axs[0].set_title("Densidad de disparos")
     axs[0].plot(t_samples, spike_density)
 
     axs[1].eventplot(t_spikes)
+    axs[1].set_ylabel("Neurona")
+    axs[1].set_xlabel("Tiempo (ms)")
+    axs[1].set_title("Raster Plot")
 
 neurons = np.loadtxt("dat/spikes.dat", dtype=int)
 stimulus = np.loadtxt("dat/stimulus.dat", dtype=float)
@@ -139,6 +144,9 @@ def punto_4(neurons, stimulus):
         mses.append([np.square(density-r_est).mean(), np.square(density-r_mean).mean()])
 
         plt.figure()
+        plt.scatter(r_est-r_mean, density)
+
+        plt.figure()
         plt.plot(density, label="r(t)")
         plt.plot(r_est, label="r_est(t)")
         plt.legend()
@@ -152,5 +160,5 @@ if __name__ == "__main__":
     # punto_1(neurons, stimulus)
     # punto_2(neurons, stimulus)
     punto_3(neurons, stimulus)
-    punto_4(neurons[:10], stimulus)
+    # punto_4(neurons[:10], stimulus)
     plt.show()
