@@ -11,6 +11,8 @@
   affiliation: "Instituto Balseiro",
   language: "es",
   compact-mode: true,
+  heading-font: "Vollkorn",
+  heading-color: black,
   it
 )
 
@@ -49,9 +51,9 @@ Se calculó el factor de Fano (FF):
 $ "FF" = sigma_("N")^2 / #overline[N] = (13.53)^2/117.01 approx 1.566 $
 
 
-#todo(position: "inline")[es renewal?]
+Dado que $"FF"^2 != "CV"$, no es un proceso de renewal. 
 
-= Tasa de disparo dependiente del tiempo
+= Tasa de disparo dependiente del tiempo <sec:r_t>
 
 Se calculó la densidad de disparos $r(t)$ utilizando un ancho de bin de 100 muestras (10ms).
 
@@ -72,13 +74,45 @@ La #ref(<fig:r_t>) muestra el resultado del cálculo de $r(t)$ y el raster plot 
 
 = Filtro asociado a la neurona
 
+Se busca un filtro para estimar $r(t)$:
+$ r_"est"(t) = r_0 + integral_0^infinity D(tau)s(t-tau) dif tau $
+
+== Cálculo $r_0$
+
+$r_0$ se obtuvo de acuerdo a la siguiente ecuación:$ r_0 = 1/N_T sum_(i=0)^N_T r_i $
+
+Calculado a partir del $r(t)$ obtenido en la #ref(<sec:r_t>), se obtiene:
+
+$ r_0 = 116.2 "Hz" $
 
 
+== Cálculo $D(tau)$
 
-#todo(position: "inline")[grafico D]
+$D(tau)$ se obtuvo de acuerdo a la siguiente ecuación:
 
-#todo(position: "inline")[codigo de calculo de D]
+$ D(tau) = 1/sigma_s^2 <r> "STA"(tau) $
 
+donde
+$ "STA"(tau) = 1/N_("spikes")sum_({n_("spikes")}) s(t_("spikes")-tau) $
+
+El siguiente código fue utilizado para calcular $D(tau)$:
+
+```python
+def calc_STA(s, tau, t_spikes):
+    suma = np.sum([s[t_spike-tau] for t_spike in t_spikes if t_spike - tau >= 0])
+    return suma / len(t_spikes)
+
+STA = np.array([calc_STA(value_stimulus, tau, t_spikes) for tau in range(len(stimulus))])
+
+D = STA*r_mean/var_stimulus
+```
+
+La #ref(<fig:D>) muestra la función $D(tau)$ resultante.
+
+#figure(
+  image("figs/D.png"),
+  caption: [Filtro lineal D que predice $r(t)-<r>$ en función del estímulo.]
+)<fig:D>
 
 = Anexo
 El repostorio de código utilizado para simular y graficar se encuentra en: #box[#link( "https://github.com/malustewart/redes-neuronales-tp3" )]
